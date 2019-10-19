@@ -1,3 +1,5 @@
+package quickstart;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -27,7 +29,8 @@ import java.util.List;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-
+import ratpack.server.RatpackServer;
+import quickstart.CORSHandler;
 
 public class DriveQuickstart {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
@@ -61,64 +64,57 @@ public class DriveQuickstart {
         .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
         .setAccessType("offline")
         .build();
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8000).build();
+        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(6000).build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    public static void main(String... args) throws IOException, GeneralSecurityException {
+    public static void main(String... args) throws Exception, IOException, GeneralSecurityException {
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
         .setApplicationName(APPLICATION_NAME)
         .build();
 
-        // Print the names and IDs for up to 10 files.
-        FileList result = service.files().list()
-        .setPageSize(10)
-        .setFields("nextPageToken, files(id, name)")
-        .execute();
-        List<File> files = result.getFiles();
-        if (files == null || files.isEmpty()) {
-            System.out.println("No files found.");
-        } else {
-            System.out.println("Files:");
-            for (File file : files) {
-                System.out.printf("%s (%s)\n", file.getName(), file.getId());
-            }
-        }
-        System.out.println("**********");
-
         String fileId = "13eyL9rx1IxoTwztTcDu9XXKVal2NF0ehIInezKOzGLg";
 
+        // build file name
         StringBuilder filename = new StringBuilder("Portland_ME_script_draft_v");
-
         DateFormat dateFormat = new SimpleDateFormat("MM.dd.yyyy");
         Date date = new Date();
         filename.append(dateFormat.format(date));
-        
         filename.append(".docx");
-        
         String fn = filename.toString();
 
+        // pull out file from Google Drive
         FileOutputStream fos = new FileOutputStream(fn);
         service.files().export(fileId, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
         .executeMediaAndDownloadTo(fos);
 
-        System.out.println("**********");
-
-
         String folderId = "1_AK0VpJ3rtq5xDVL0jg2ALWlZ8LJ9TWA";
-
+        
+        // set up file to be uploaded
         File fileMetadata = new File();
         fileMetadata.setName(fn);
         fileMetadata.setMimeType("application/vnd.google-apps.document");
         fileMetadata.setParents(Collections.singletonList(folderId));
 
+        // pull file
         java.io.File filePath = new java.io.File("/Users/sambutton/Documents/SoftwareEngineering/indepProjects/googleAPI/quickstart/"+fn);
         FileContent mediaContent = new FileContent("text/docx", filePath);
         File file = service.files().create(fileMetadata, mediaContent)
         .setFields("id, parents")
         .execute();
         System.out.println("File ID: " + file.getId());
+
+
+        // test server
+        RatpackServer.start(server -> server 
+         // receives a chain object (for the response handling strategy)
+         .handlers(chain -> chain
+            // handles all incoming requests, passes job to discrete class
+           .all(new CORSHandler())
+           .get(ctx -> ctx.render("JEEConf 2016"))
+           )
+       );
     }
 }

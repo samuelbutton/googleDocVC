@@ -1,24 +1,67 @@
+
+// pull these when it builds
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath "io.ratpack:ratpack-gradle:1.7.5"
+    classpath 'com.h2database:h2:1.4.186'
+  	classpath 'org.jooq:jooq-codegen:3.8.1'
+  }
+}
+
 apply plugin: 'java'
 apply plugin: 'application'
+apply plugin: "io.ratpack.ratpack-java"
+apply plugin: "idea"
 
-mainClassName = 'DriveQuickstart'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 version = '1.0'
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
+	// This dependency is used by the application.
+    implementation 'com.google.guava:guava:28.0-jre'
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
     compile 'com.google.api-client:google-api-client:1.23.0'
     compile 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
     compile 'com.google.apis:google-api-services-drive:v3-rev110-1.23.0'
+    runtime "org.slf4j:slf4j-simple:1.7.25"
+    compile ratpack.dependency('hikari')
+  	compile 'com.h2database:h2:1.4.186' 
+  	compile 'org.jooq:jooq:3.8.1'
 }
 
+application {
+    // Define the main class for the application
+    mainClassName = 'quickstart.DriveQuickstart'
+}
 
-
-
-
-
-
+// task jooqCodegen {
+//   doLast {
+// 	  String init = "quickstart/src/main/resources/init.sql".replaceAll('\\\\', '/')
+// 	  Configuration configuration = new Configuration()
+// 		  .withJdbc(new Jdbc()
+// 		  .withDriver("org.h2.Driver")
+// 		  .withUrl("jdbc:h2:mem:todo;INIT=RUNSCRIPT FROM '$init'")
+//   )
+// 	  .withGenerator(new Generator()
+// 	  .withDatabase(new Database()
+// 	  .withName("org.jooq.util.h2.H2Database")
+// 	  .withIncludes(".*")
+// 	  .withExcludes("")
+// 	  .withInputSchema("PUBLIC")
+//   )
+// 	  .withTarget(new Target()
+// 	  .withDirectory("quickstart/src/main/java")
+// 	  .withPackageName("jooq")))
+//   GenerationTool.generate(configuration)
+//   }
+// }

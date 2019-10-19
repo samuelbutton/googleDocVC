@@ -1,0 +1,23 @@
+
+
+task jooqCodegen {
+  doLast {
+	  String init = "quickstart/src/main/resources/init.sql".replaceAll('\\\\', '/')
+	  Configuration configuration = new Configuration()
+		  .withJdbc(new Jdbc()
+		  .withDriver("org.h2.Driver")
+		  .withUrl("jdbc:h2:mem:todo;INIT=RUNSCRIPT FROM '$init'")
+  )
+	  .withGenerator(new Generator()
+	  .withDatabase(new Database()
+	  .withName("org.jooq.util.h2.H2Database")
+	  .withIncludes(".*")
+	  .withExcludes("")
+	  .withInputSchema("PUBLIC")
+  )
+	  .withTarget(new Target()
+	  .withDirectory("quickstart/src/main/java")
+	  .withPackageName("jooq")))
+  GenerationTool.generate(configuration)
+  }
+}
