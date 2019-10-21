@@ -30,7 +30,6 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import ratpack.server.RatpackServer;
-import quickstart.CORSHandler;
 
 public class DriveQuickstart {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
@@ -111,10 +110,11 @@ public class DriveQuickstart {
         RatpackServer.start(server -> server 
          // receives a chain object (for the response handling strategy)
          .handlers(chain -> chain
-            // handles all incoming requests, passes job to discrete class
-           .all(new CORSHandler())
-           .get(ctx -> ctx.render("JEEConf 2016"))
-           )
+           .get(ctx -> ctx.render("this World!"))
+           .get(":name", ctx -> ctx.render("Hello " + ctx.getPathTokens().get("name") + "!"))     
+         )
        );
+
+
     }
 }
