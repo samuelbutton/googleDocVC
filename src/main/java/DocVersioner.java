@@ -29,20 +29,17 @@ import java.util.List;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import ratpack.server.RatpackServer;
 
-public class DriveQuickstart {
+public class DocVersioner {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
-
     /**
      * Global instance of the scopes required by this quickstart.
      * If modifying these scopes, delete your previously saved tokens/ folder.
      */
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
-
     /**
      * Creates an authorized Credential object.
      * @param HTTP_TRANSPORT The network HTTP Transport.
@@ -51,7 +48,7 @@ public class DriveQuickstart {
      */
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = DriveQuickstart.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = DocVersioner.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }
@@ -67,7 +64,7 @@ public class DriveQuickstart {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    public static void main(String... args) throws Exception, IOException, GeneralSecurityException {
+    public static void versionDoc() throws Exception {
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
@@ -104,17 +101,5 @@ public class DriveQuickstart {
         .setFields("id, parents")
         .execute();
         System.out.println("File ID: " + file.getId());
-
-
-        // test server
-        RatpackServer.start(server -> server 
-         // receives a chain object (for the response handling strategy)
-         .handlers(chain -> chain
-           .get(ctx -> ctx.render("this World!"))
-           .get(":name", ctx -> ctx.render("Hello " + ctx.getPathTokens().get("name") + "!"))     
-         )
-       );
-
-
     }
 }
